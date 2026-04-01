@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BookStore{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 80px;
+            --brand-gradient-start: #0061cc;
+            --brand-gradient-end: #0088ff;
+            --accent: #ffcd39;
+            --main-bg: #eff4ff;
+            --card-shadow: 0 10px 28px rgba(15, 23, 42, 0.10);
+            --border-radius: 0.85rem;
+            --text-color: #15233c;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--main-bg);
+            color: var(--text-color);
+        }
+
+        .sidebar {
+            height: 100vh;
+            background: linear-gradient(140deg, var(--brand-gradient-start) 0%, var(--brand-gradient-end) 100%);
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            padding-top: 0;
+            transition: all 0.35s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        body.sidebar-collapsed .sidebar {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar .brand {
+            padding: 1.3rem 1.1rem;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .sidebar .brand span {
+            transition: opacity 0.3s;
+        }
+
+        .sidebar .brand small {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.85);
+            font-weight: 500;
+        }
+
+        body.sidebar-collapsed .sidebar .brand span {
+            opacity: 0;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.92);
+            padding: 0.55rem 1rem;
+            font-size: 0.93rem;
+            border-radius: 0.55rem;
+            margin: 0.33rem 0.6rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: #ffffff;
+            background: rgba(255,255,255,0.24);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+            outline: none;
+        }
+
+        .sidebar .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent);
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        .sidebar .nav-link i {
+            width: 26px;
+            text-align: center;
+            margin-right: 0.75rem;
+        }
+
+        body.sidebar-collapsed .sidebar .nav-link {
+            text-align: center;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+
+        body.sidebar-collapsed .sidebar .nav-link i {
+            margin-right: 0;
+        }
+
+        body.sidebar-collapsed .sidebar .nav-link span {
+            display: none;
+        }
+
+        .sidebar .section-label {
+            color: rgba(255,255,255,0.35);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 1rem 1rem 0.3rem;
+            font-weight: 600;
+        }
+
+        body.sidebar-collapsed .sidebar .section-label {
+            display: none;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            background: var(--main-bg);
+            transition: margin-left 0.35s ease;
+        }
+
+        body.sidebar-collapsed .main-content {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        .top-bar {
+            background: #fff;
+            border-bottom: 1px solid #dbe2f1;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .top-bar .brand-title {
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: var(--brand-gradient-start);
+        }
+
+        .top-bar .btn-outline-primary {
+            color: var(--brand-gradient-start);
+            border-color: var(--brand-gradient-start);
+            background: #fff;
+        }
+
+        .top-bar .btn-outline-primary:hover {
+            color: #fff;
+            background: var(--brand-gradient-start);
+            border-color: var(--brand-gradient-start);
+        }
+
+        .top-bar .btn-outline-secondary {
+            color: #1f2a45;
+            border-color: #cdd2e4;
+        }
+
+        .top-bar .btn-outline-secondary:hover {
+            background: #e3ebff;
+            border-color: #b6c5f3;
+        }
+
+        .page-body {
+            padding: 1.25rem 1.5rem 2rem;
+        }
+
+        .card {
+            border: none;
+            box-shadow: var(--card-shadow);
+            border-radius: var(--border-radius);
+        }
+
+        .table th {
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #6c757d;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--brand-gradient-start);
+            border-color: var(--brand-gradient-start);
+            color: #fff;
+            box-shadow: 0 8px 20px rgba(0, 104, 204, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--brand-gradient-end);
+            border-color: var(--brand-gradient-end);
+            color: #fff;
+        }
+
+        .btn-outline-primary {
+            color: var(--brand-gradient-start);
+            border-color: var(--brand-gradient-start);
+            background: #fff;
+        }
+
+        .btn-outline-primary:hover {
+            color: #fff;
+            background: var(--brand-gradient-start);
+        }
+
+        .badge-primary {
+            background: var(--brand-gradient-start);
+        }
+
+        .badge {
+            border-radius: 0.65rem;
+            padding: 0.35rem 0.6rem;
+            font-size: 0.75rem;
+        }
+
+        .stat-card {
+            border-left: 4px solid var(--accent);
+            border-radius: 0.8rem;
+            background: #fff;
+            box-shadow: 0 12px 24px rgba(15,23,42,0.08);
+        }
+
+        .stat-card.blue { background: #e8f1ff; }
+        .stat-card.green { background: #e9f7ef; }
+        .stat-card.orange { background: #fff7e8; }
+        .stat-card.purple { background: #f2e8ff; }
+
+        @media (max-width: 991px) {
+            body.sidebar-collapsed .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+            }
+
+            body.sidebar-open .sidebar {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="brand">
+            <i class="bi bi-book-half"></i>
+            <span>BookStore Admin</span>
+        </div>
+        <nav class="nav flex-column mt-2">
+            <a class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}" href="/dashboard/">
+                <i class="bi bi-house-door"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <div class="section-label">Catalog</div>
+            <a class="nav-link {% if '/dashboard/books/' in request.path %}active{% endif %}" href="/dashboard/books/">
+                <i class="bi bi-journal-bookmark"></i>
+                <span>Books</span>
+            </a>
+            <a class="nav-link {% if '/dashboard/catalogs/' in request.path %}active{% endif %}" href="/dashboard/catalogs/">
+                <i class="bi bi-folder"></i>
+                <span>Catalogs</span>
+            </a>
+
+            <div class="section-label">People</div>
+            <a class="nav-link {% if '/dashboard/customers/' in request.path %}active{% endif %}" href="/dashboard/customers/">
+                <i class="bi bi-people"></i>
+                <span>Customers</span>
+            </a>
+            <a class="nav-link {% if '/dashboard/staffs/' in request.path %}active{% endif %}" href="/dashboard/staffs/">
+                <i class="bi bi-person-badge"></i>
+                <span>Staff</span>
+            </a>
+            <a class="nav-link {% if '/dashboard/managers/' in request.path %}active{% endif %}" href="/dashboard/managers/">
+                <i class="bi bi-person-workspace"></i>
+                <span>Managers</span>
+            </a>
+
+            <div class="section-label">Orders</div>
+            <a class="nav-link {% if '/dashboard/orders/' in request.path %}active{% endif %}" href="/dashboard/orders/">
+                <i class="bi bi-receipt"></i>
+                <span>Orders</span>
+            </a>
+            <a class="nav-link {% if '/dashboard/payments/' in request.path %}active{% endif %}" href="/dashboard/payments/">
+                <i class="bi bi-credit-card"></i>
+                <span>Payments</span>
+            </a>
+            <a class="nav-link {% if '/dashboard/shipments/' in request.path %}active{% endif %}" href="/dashboard/shipments/">
+                <i class="bi bi-truck"></i>
+                <span>Shipments</span>
+            </a>
+
+            <div class="section-label">Feedback</div>
+            <a class="nav-link {% if '/dashboard/reviews/' in request.path %}active{% endif %}" href="/dashboard/reviews/">
+                <i class="bi bi-star"></i>
+                <span>Reviews</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="d-flex align-items-center gap-3">
+                <button id="sidebar-toggle" class="btn btn-outline-secondary btn-sm" type="button" aria-label="Toggle menu">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h5 class="mb-0 brand-title">{% block page_title %}Dashboard{% endblock %}</h5>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <a href="/" class="btn btn-outline-primary btn-sm" target="_blank">
+                    <i class="bi bi-shop me-1"></i>Customer Portal
+                </a>
+                {% if request.session.staff_name %}
+                <span class="text-muted"><i class="bi bi-person-circle me-1"></i>{{ request.session.staff_name }}</span>
+                {% endif %}
+                <a href="/dashboard/logout/" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-box-arrow-right me-1"></i>Sign Out
+                </a>
+            </div>
+        </div>
+
+        <div class="page-body">
+            {% if messages %}
+            <div id="flash-messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Auto-close flash messages
+    setTimeout(function(){
+        document.querySelectorAll('#flash-messages .alert').forEach(function(el){
+            bootstrap.Alert.getOrCreateInstance(el).close();
+        });
+    }, 3500);
+
+    // Sidebar toggle (desktop + mobile)
+    document.getElementById('sidebar-toggle')?.addEventListener('click', function() {
+        document.body.classList.toggle('sidebar-collapsed');
+    });
+
+    // Close mobile sidebar when clicking outside
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth < 992 && !event.target.closest('.sidebar') && !event.target.closest('#sidebar-toggle')) {
+            document.body.classList.remove('sidebar-open');
+        }
+    });
+
+    // Toggle sidebar visibility on small screens
+    document.getElementById('sidebar-toggle')?.addEventListener('click', function() {
+        if (window.innerWidth < 992) {
+            document.body.classList.toggle('sidebar-open');
+        }
+    });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
